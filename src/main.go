@@ -279,6 +279,13 @@ func (this *User) Login(request *restful.Request, response *restful.Response) {
         return
     }
 
+    resp := _checkToken(user.Token)
+
+    if resp.Status != "ok" {
+        response.WriteEntity(resp)
+        return
+    }
+
     r.Status = "ok"
     r.Data = user.Token
     response.WriteEntity(r)
@@ -286,10 +293,16 @@ func (this *User) Login(request *restful.Request, response *restful.Response) {
 }
 
 func CheckToken(request *restful.Request, response *restful.Response) {
-    var r resp
-
     token := request.PathParameter("token")
 
+    r := _checkToken(token)
+    response.WriteEntity(r)
+    return
+}
+
+func _checkToken(token string) (resp) {
+    var r resp
+    
     pool := NewPool()
     c := pool.Get()
 
@@ -299,8 +312,7 @@ func CheckToken(request *restful.Request, response *restful.Response) {
     if result == nil || err != nil {
         r.Status = "fail"
         r.Errmsg = "no token"
-        response.WriteEntity(r)
-        return
+        return r
     }
 
     var user User_format
@@ -309,15 +321,14 @@ func CheckToken(request *restful.Request, response *restful.Response) {
     if user.Token != token {
         r.Status = "fail"
         r.Errmsg = "token auth issue"
-        response.WriteEntity(r)
-        return
+        return r
     }
 
     layout := "2006-01-02 15:04:05"
     now_time := time.Now()
-    now_time = now_time.Add(8 * time.Hour)
+    // now_time = now_time.Add(time.Hour * 8)
     start_time := user.Start_time
-    last_time := user.Start_time.Add(time.Hour*2)
+    last_time := user.Start_time.Add(time.Hour * 24)
 
     now_times := now_time.Format(layout)
     now_time_parse, err := time.Parse(layout, now_times)
@@ -333,18 +344,16 @@ func CheckToken(request *restful.Request, response *restful.Response) {
     if start_time_parse.After(now_time_parse) {
         r.Status = "fail"
         r.Errmsg = "no start"
-        response.WriteEntity(r)
-        return
-    } else if last_time_parse.Before(now_time_parse) {
+        return r
+    }
+    if last_time_parse.Before(now_time_parse) {
         r.Status = "fail"
         r.Errmsg = "expire"
-        response.WriteEntity(r)
-        return   
+        return r
     }
 
     r.Status = "ok"
-    response.WriteEntity(r)
-    return 
+    return r
 }
 
 func Times(request *restful.Request, response *restful.Response) {
