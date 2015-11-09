@@ -44,13 +44,13 @@ func UserRouter() *restful.WebService {
     service.Route(service.GET("/{token}").To(user.Get))
     service.Route(service.GET("").To(user.GetList))
     service.Route(service.POST("").To(user.Create))
+    service.Route(service.POST("/list").To(user.CreateList))
     service.Route(service.POST("/login").To(user.Login))
     service.Route(service.PUT("/{token}").To(user.Update))
     service.Route(service.DELETE("/{token}").To(user.Delete))
  
     return service
 }
-
 
 type User struct {
 }
@@ -64,7 +64,6 @@ type resp struct {
 type User_format struct {
     Email string `json:"email"`
     Password  string `json:"password"`
-    // Start_time string `json:"start_time"`
     Start_time time.Time `json:"start_time"`
     Token string `json:"token"`
 }
@@ -176,9 +175,48 @@ func (this *User) Create(request *restful.Request, response *restful.Response) {
 
     if result == nil || err != nil {
         r.Status = "fail"
-        r.Errmsg = "no user"
+        r.Errmsg = "no create user"
         response.WriteEntity(r)
         return
+    }
+
+    r.Status = "ok"
+    response.WriteEntity(r)
+    return
+}
+
+func (this *User) CreateList(request *restful.Request, response *restful.Response) {
+    var r resp
+    var user []User_format
+
+    body, err := ioutil.ReadAll(request.Request.Body)
+    if err != nil {
+        r.Status = "fail"
+        r.Errmsg = "Request Body error"
+        response.WriteEntity(r)
+        return
+    }
+
+    json.Unmarshal(body, &user)
+    
+    for index := range user {
+        user[index].Password = Encryption(user[index].Password)
+        user[index].Token = Encryption(user[index].Email)
+        user[index].Start_time = user[index].Start_time
+        value, _ := json.Marshal(user[index])
+        pool := NewPool()
+        c := pool.Get()
+
+        key := "user_list:" + user[index].Token
+
+        result, err := c.Do("SET", key, value)
+
+        if result == nil || err != nil {
+            r.Status = "fail"
+            r.Errmsg = "no create user"
+            response.WriteEntity(r)
+            return
+        }
     }
 
     r.Status = "ok"
@@ -326,7 +364,7 @@ func _checkToken(token string) (resp) {
 
     layout := "2006-01-02 15:04:05"
     now_time := time.Now()
-    // now_time = now_time.Add(time.Hour * 8)
+    now_time = now_time.Add(time.Hour * 8)
     start_time := user.Start_time
     last_time := user.Start_time.Add(time.Hour * 24)
 
