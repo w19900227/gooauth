@@ -16,8 +16,8 @@ func main() {
     restful.Add(UserRouter())
     restful.Add(TokenRouter())
 
-    // log.Fatal(http.ListenAndServe(":9090", nil))
-    log.Fatal(http.ListenAndServe(":31001", nil))
+    log.Fatal(http.ListenAndServe(":9090", nil))
+    // log.Fatal(http.ListenAndServe(":31001", nil))
 }
 
 func TokenRouter() *restful.WebService {
@@ -148,6 +148,7 @@ func (this *User) GetList(request *restful.Request, response *restful.Response) 
 }
 
 func (this *User) Create(request *restful.Request, response *restful.Response) {
+    fmt.Println("create")
     var r resp
     var user User_format
 
