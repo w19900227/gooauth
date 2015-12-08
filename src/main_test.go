@@ -61,22 +61,22 @@ type user_format struct {
     Start_time string `json:"start_time"`
 }
 type user struct {
-    Email string `json:"email"`
-    Password  string `json:"password"`
-    Start_time time.Time `json:"start_time"`
+    Email string `json:"email,omitempty"`
+    Password  string `json:"password,omitempty"`
+    Start_time time.Time `json:"start_time,omitempty"`
 }
 type test_user struct {
-    Status string `json:"status"`
-    Erron  string `json:"erron"`
-    Errmsg string`json:"errmsg"`
-    Data   user `json:"data"`
+    Status string `json:"status,inline"`
+    Erron  string `json:"erron,inline"`
+    Errmsg string`json:"errmsg,inline"`
+    Data   user `json:"data,inline"`
 }
 
 type test_users struct {
-    Status string `json:"status"`
-    Erron  string `json:"erron"`
-    Errmsg string`json:"errmsg"`
-    Data   []user `json:"data"`
+    Status string `json:"status,inline"`
+    Erron  string `json:"erron,inline"`
+    Errmsg string`json:"errmsg,inline"`
+    Data   []user `json:"data,inline"`
 }
 
 var url string = "http://localhost:9090"

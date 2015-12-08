@@ -55,10 +55,10 @@ func UserRouter() *restful.WebService {
 type User struct {
 }
 type resp struct {
-    Status string `json:"status"`
-    Erron  string `json:"erron"`
-    Errmsg string`json:"errmsg"`
-    Data   interface{} `json:"data"`
+    Status string `json:"status,inline"`
+    Erron  string `json:"erron,inline"`
+    Errmsg string`json:"errmsg,inline"`
+    Data   interface{} `json:"data,inline"`
 }
 
 type User_format struct {
